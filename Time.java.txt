@@ -1,0 +1,48 @@
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.IOException;
+
+public class TimeScraper {
+
+    public static JSONArray getLatestTimeStories() {
+        JSONArray jsonArray = new JSONArray();
+        String url = "https://time.com";
+
+        try {
+            Document document = Jsoup.connect(url).get();
+            Elements storyLinks = document.select("a.headline");
+
+            int count = 0;
+            for (Element link : storyLinks) {
+                String title = link.text();
+                String href = link.attr("href");
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("title", title);
+                jsonObject.put("link", href);
+                jsonArray.put(jsonObject);
+                count++;
+                if (count >= 6) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return jsonArray;
+    }
+
+    public static void main(String[] args) {
+        JSONArray latestStories = getLatestTimeStories();
+        for (int i = 0; i < latestStories.length(); i++) {
+            JSONObject story = latestStories.getJSONObject(i);
+            System.out.println("Title: " + story.getString("title"));
+            System.out.println("Link: " + story.getString("link"));
+            System.out.println();
+        }
+    }
+}
